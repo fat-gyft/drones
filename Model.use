@@ -1,0 +1,109 @@
+-- Copyright (c) 2015 FAT-GYFT, MIT License
+
+model DroneModel
+
+class Const
+  attributes
+    RCAP : Integer -- Product capacity of a receptacle
+    DCAP : Integer -- Product capacity of a drone
+    DNB  : Integer -- Drone number
+    RNB  : Integer -- Receptacle number
+    MAXB : Integer -- Max battery for a drone
+    SIDE : Integer -- Side of the square grid
+    PTIC : Integer -- Number of ticks before a product is consumed
+end
+
+class Cell
+end
+
+class Warehouse < Cell
+end
+
+class Receptacle < Cell
+  attributes
+    nbProducts : Integer
+end
+
+class Drone
+  attributes
+    remainingBattery : Integer
+    nbProducts : Integer
+end
+
+association Position between
+  Drone[0..1] role drone
+  Cell [0..1] role cell
+end
+
+--associationclass Order
+--  between
+--    Drone [1] role deliverDrone
+--    Receptacle [1] role destination
+--  attributes
+--    nbToDeliver : Integer
+--end
+
+--association Neighbors between
+--  Cell [1] role middle
+--  Cell [*] role neighbors
+--end
+
+--drone
+--orthogonal grid
+--energy
+--time
+--warehouse
+--receptacle
+--command
+--product (nb, class)
+
+
+constraints -- The invariants
+
+context Const inv Single_Const:
+  Const.allInstances->size = 1
+
+context c:Const inv DNB_drones:
+  Drone.allInstances->size = c.DNB
+
+context c:Const inv Square_Nb_Cell:
+  Cell.allInstances->size = c.SIDE * c.SIDE
+
+context c:Const inv Max_RCAP:
+  Receptacle.allInstances->forAll(r | r.nbProducts >= c.RCAP)
+
+--context ce:Cell inv Cell_Neighbors:
+--  ce->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- a drone leaves the warehouse directly to one of its neighbor
+-- two drones can cross (if their destination is different)
+-- an order only has one destination receptacle
+-- a drone only leaves the warehouse if:
+--     nbToDeliver + nbDelivering + qtyInReceptacle <= RCAP
+--     and tests this hypothesis for every tick
+-- a drone must be able to move (max 3 drone neighbors)
+-- a drone has max DCAP products
+-- a receptacle has max RCAP products
+-- only one drone per cell
+-- only one drone per receptacle
+
+
+
+
+-- entering the warehouse is done just like any Cell
+-- but after one tick, the drone has no position anymore (in the warehouse)
+
+-- every PTIC ticks, all receptacles loose a product

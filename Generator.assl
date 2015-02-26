@@ -1,0 +1,39 @@
+-- Copyright (c) 2015 FAT-GYFT, MIT License
+
+procedure genWorld
+  (c : Const)
+
+var
+  drones : Sequence(Drone), aDrone : Drone,
+  cells : Sequence(Cell), aCell : Cell;
+begin
+  -- Generating Grid
+  cells := CreateN(Cell, [c.SIDE * c.SIDE]);
+
+--  [0 1 2
+--   3 4 5
+--   6 7 8]
+--
+--  0: 1 3
+--  1: 2 4
+--  2: 5
+--  3: 4 6
+--  4: 5 7
+--  5: 8
+--  6: 7
+--  7: 8
+
+--  for i:Integer in [Sequence{1..(c.SIDE * c.SIDE - 1)}]
+--  begin
+--    Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
+--  end;
+
+  -- Generating drones and adding them on the grid
+  drones := CreateN(Drone, [c.DNB]);
+  for i:Integer in [Sequence{1..c.DNB}]
+  begin
+    aDrone := Try([drones]);
+    aCell := Try([cells]);
+    Insert(Position, [aDrone], [aCell]);
+  end;
+end;
