@@ -14,6 +14,7 @@ class Const
 end
 
 class Cell
+-- Add an operation to calculate all neighbors (both-ways)
 end
 
 class Warehouse < Cell
@@ -43,10 +44,10 @@ end
 --    nbToDeliver : Integer
 --end
 
---association Neighbors between
---  Cell [1] role middle
---  Cell [*] role neighbors
---end
+association Neighbors between
+  Cell [*] role origin
+  Cell [*] role neighbors
+end
 
 --drone
 --orthogonal grid
@@ -65,9 +66,6 @@ context Const inv Single_Const:
 
 context c:Const inv DNB_drones:
   Drone.allInstances->size = c.DNB
-
-context c:Const inv Square_Nb_Cell:
-  Cell.allInstances->size = c.SIDE * c.SIDE
 
 context c:Const inv Max_RCAP:
   Receptacle.allInstances->forAll(r | r.nbProducts >= c.RCAP)
