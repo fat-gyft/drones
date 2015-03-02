@@ -29,6 +29,27 @@ class Drone
   attributes
     remainingBattery : Integer
     nbProducts : Integer
+	receptacle : Receptacle
+	postion : Cell
+end
+
+class Command
+  attributes
+    receptacle : Receptacle
+    nbProducts : Integer
+end
+
+class World
+  attributes
+    drones : Sequence(Drone)
+	cells: Sequence(Cell)
+end
+
+class Time
+  attributes
+    timeReference : Integer
+  operations
+    ticTac(world : World)
 end
 
 association Position between
@@ -49,14 +70,14 @@ association Neighbors between
   Cell [0..4] role neighbors
 end
 
---drone
+--drone X
 --orthogonal grid
---energy
+--energy X
 --time
---warehouse
---receptacle
---command
---product (nb, class)
+--warehouse X
+--receptacle X
+--command X
+--product (nb, class) X
 
 
 constraints -- The invariants
@@ -64,12 +85,34 @@ constraints -- The invariants
 context Const inv Single_Const:
   Const.allInstances->size = 1
 
+--Rule 1
 context c:Const inv DNB_drones:
   Drone.allInstances->size = c.DNB
+  
+context c:Const inv RNB_receptacles:
+  Receptacle.allInstances->size = c.RNB
 
+--Rule 2
 context c:Const inv Max_RCAP:
-  Receptacle.allInstances->forAll(r | r.nbProducts >= c.RCAP)
+  Receptacle.allInstances->forAll(r | r.nbProducts >= c.RCAP and c.RCAP>0)
 
+--Rule 3
+context Command inv commandInv:
+  self.receptacle = 1
+  
+--Rule 6
+context c:Const inv Max_DCAP:
+  Drone.allInstances->forAll(d | d.nbProducts >= c.DCAP and c.DCAP>0)
+ 
+--Rule 11
+context c:Const inv oneDronePerCell:
+  c.DNB-
+
+--TicTac pdf page 27/28
+--context Time::ticTac(w : World)
+--  pre initPre : w.isDefined()
+
+	
 --context ce:Cell inv Cell_Neighbors:
 --  ce->
 
