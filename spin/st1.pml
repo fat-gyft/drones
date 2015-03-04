@@ -1,39 +1,75 @@
-#define mutex (critical <= 1)
-bit t = 0;
-byte critical = 0;
+#define stops (stopped == 3)
+#define oneelect (y0 + y1 + y2 == 1)
+byte stopped = 0;
+
+bit g0 = 1;
+bit g1 = 1;
+bit g2 = 1;
+
+bit y0 = 0;
+bit y1 = 0;
+bit y2 = 0;
+
+byte a = 200;
 
 proctype P0()
 {
-  do :: 1 -> 
-    if :: (t==0) -> skip fi;
-    assert(t==0);
-    critical++;
-    printf("CA0");
-    critical--;
-    t = 1;
-    printf("NCAO");
-  od;
+  g0 = 1;
+  a = 0;
+  g0 = 0;
+
+  if :: (g0==0) -> skip fi;
+  if :: (g1==0) -> skip fi;
+  if :: (g2==0) -> skip fi;
+
+  y0 = 0==a;
+  assert(y0 == (0==a));
+  stopped++;
 }
 
 proctype P1()
 {
-  do :: 1 -> 
-    if :: (t==1) -> skip fi;
-    assert(t==1);
-    critical++;
-    printf("CA1");
-    critical--;
-    t = 0;
-    printf("NCA1");
-  od;
+  g1 = 1;
+  a = 1;
+  g1 = 0;
+
+  if :: (g0==0) -> skip fi;
+  if :: (g1==0) -> skip fi;
+  if :: (g2==0) -> skip fi;
+
+  y1 = 1==a;
+  assert(y1 == (1==a));
+  stopped++;
+}
+
+proctype P2()
+{
+  g2 = 1;
+  a = 2;
+  g2 = 0;
+
+  if :: (g0==0) -> skip fi;
+  if :: (g1==0) -> skip fi;
+  if :: (g2==0) -> skip fi;
+
+  y2 = 2==a;
+  assert(y2 == (2==a));
+  stopped++;
 }
 
 init
 {
-  assert(t==0 || t==1);
+  assert(g0==0 || g0==1);
+  assert(g1==0 || g1==1);
+  assert(g2==0 || g2==1);
+
+  assert(y0==0 || y0==1);
+  assert(y1==0 || y1==1);
+  assert(y2==0 || y2==1);
   atomic
   {
     run P0();
-    run P1()
+    run P1();
+	run P2();
   }
 }
