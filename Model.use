@@ -30,13 +30,11 @@ class Drone
     remainingBattery : Integer
     nbProducts : Integer
 	receptacle : Receptacle
-	postion : Cell
-end
-
-class Command
-  attributes
-    receptacle : Receptacle
-    nbProducts : Integer
+	position : Cell
+  operations
+    init()
+	post prod_init:
+	   self.nbProducts = 3
 end
 
 class World
@@ -58,9 +56,9 @@ association Position between
 end
 
 --associationclass Order
---  between
---    Drone [1] role deliverDrone
---    Receptacle [1] role destination
+-- between
+--    Drone [0..1] role deliverDrone
+--    Receptacle [0..1] role destination
 --  attributes
 --    nbToDeliver : Integer
 --end
@@ -93,20 +91,16 @@ context c:Const inv RNB_receptacles:
   Receptacle.allInstances->size = c.RNB
 
 --Rule 2
-context c:Const inv Max_RCAP:
-  Receptacle.allInstances->forAll(r | r.nbProducts >= c.RCAP and c.RCAP>0)
-
---Rule 3
-context Command inv commandInv:
-  self.receptacle = 1
+--context c:Const inv Max_RCAP:
+--  Receptacle.allInstances->forAll(r | r.nbProducts <= c.RCAP and c.RCAP>0)
   
 --Rule 6
-context c:Const inv Max_DCAP:
-  Drone.allInstances->forAll(d | d.nbProducts >= c.DCAP and c.DCAP>0)
+--context c:Const inv Max_DCAP:
+--  Drone.allInstances->forAll(d | d.nbProducts <= c.DCAP and c.DCAP>0)
  
 --Rule 11
-context c:Const inv oneDronePerCell:
-  c.DNB-
+--context c:Const inv oneDronePerCell:
+--  c.DNB-
 
 --TicTac pdf page 27/28
 --context Time::ticTac(w : World)
@@ -115,6 +109,7 @@ context c:Const inv oneDronePerCell:
 	
 --context ce:Cell inv Cell_Neighbors:
 --  ce->
+
 
 
 
@@ -146,5 +141,4 @@ context c:Const inv oneDronePerCell:
 
 -- entering the warehouse is done just like any Cell
 -- but after one tick, the drone has no position anymore (in the warehouse)
-
--- every PTIC ticks, all receptacles loose a product
+-- every PTIC ticks, all receptacles loose product
