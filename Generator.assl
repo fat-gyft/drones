@@ -4,8 +4,10 @@ procedure genWorld (c : Const)
 
 var
   drones : Sequence(Drone), aDrone : Drone,
+  receptacles : Sequence(Receptacle), aReceptacle : Receptacle,
   cells : Sequence(Cell), aCell : Cell, nbCells : Integer,
-  nbDronesOut : Integer;
+  nbDronesOut : Integer,
+  nbReceptacles : Integer;
 
 begin
   -- Generating Grid
@@ -42,11 +44,16 @@ begin
   -- Generating drones
   drones := CreateN(Drone, [c.DNB]);
   nbDronesOut := Any([Sequence{1..c.DNB}]);
+  
+   -- Generating receptacles
+  receptacles := CreateN(Receptacle, [c.RNB]);
+  nbReceptacles := Any([Sequence{1..c.RNB}]);
 
   -- Adding a random number of them on the grid
   for i:Integer in [Sequence{1..nbDronesOut}]
   begin
     aDrone := Try([drones]);
+	--[aDrone->init];
     aCell := Any([cells]);
     Insert(Position, [aDrone], [aCell]);
   end;
