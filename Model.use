@@ -31,10 +31,6 @@ class Drone
     nbProducts : Integer
 	receptacle : Receptacle
 	position : Cell
-  operations
-    init()
-	post prod_init:
-	   self.nbProducts = 3
 end
 
 class World
@@ -91,12 +87,12 @@ context c:Const inv RNB_receptacles:
   Receptacle.allInstances->size = c.RNB
 
 --Rule 2
---context c:Const inv Max_RCAP:
---  Receptacle.allInstances->forAll(r | r.nbProducts <= c.RCAP and c.RCAP>0)
+context c:Const inv Max_RCAP:
+  Receptacle.allInstances->forAll(r | r.nbProducts <= c.RCAP and c.RCAP>0)
   
 --Rule 6
---context c:Const inv Max_DCAP:
---  Drone.allInstances->forAll(d | d.nbProducts <= c.DCAP and c.DCAP>0)
+context c:Const inv Max_DCAP:
+  Drone.allInstances->forAll(d | d.nbProducts <= c.DCAP and c.DCAP>0)
  
 --Rule 11
 --context c:Const inv oneDronePerCell:
