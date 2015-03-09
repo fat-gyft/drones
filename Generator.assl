@@ -70,7 +70,8 @@ begin
   for i:Integer in [Sequence{1..nbDronesOut}]
   begin
     aDrone := Try([drones]);
-  [aDrone].nbProducts := [w.DCAP];
+   [aDrone].nbProducts := [w.DCAP];
+   [aDrone].remainingBattery := [w.MAXB];
     aCell := Any([cells]);
     Insert(Position, [aDrone], [aCell]);
   end;
