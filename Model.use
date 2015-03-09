@@ -35,12 +35,10 @@ end
 class Time
   attributes
     timeReference : Integer
-  operations
-     succPlus() : Set(Time) =
-      self.next->closure(w|w.next);
-    TicTac(w : World):
-	  pre: w.isDefined()
-	  post: ;
+--  operations
+--    TicTac(w : World)
+--	  pre worldDefined: w.isDefined()
+--	  post: self := [self.succ]
 end
 
 associationclass Order
