@@ -39,7 +39,7 @@ end
 
 associationclass Order
   between
-    Drone      [0..1] role deliverDrone
+    Drone      [*] role deliverDrone
     Receptacle [0..1] role destination
   attributes
     nbToDeliver : Integer

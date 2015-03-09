@@ -87,7 +87,7 @@ begin
   begin
     aDrone := Try([drones]);
     aReceptacle := Any([receptacles]);
-	--Insert(Position, [aDrone], [warehouse]);
+	--Insert(Position, [aDrone], [warehouse]); No initial position for the drones
     Insert(Order, [aDrone], [aReceptacle]);
   end; 
 end;
