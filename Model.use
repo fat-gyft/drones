@@ -35,8 +35,6 @@ end
 class Time
   attributes
     timeReference : Integer
-  operations
-    ticTac(world : World)
 end
 
 associationclass Order
@@ -118,7 +116,7 @@ context w:World inv Max_DCAP:
 
 --Rule 15
 context w:World inv MAXB_drones:
-  Drone.allInstances->forAll(d| [d].remainingBattery<=w.MAXB)
+  Drone.allInstances->forAll(d| d.remainingBattery<=w.MAXB)
 
 --TicTac pdf page 27/28
 --context Time::ticTac(w : World)

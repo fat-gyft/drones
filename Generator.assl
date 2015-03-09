@@ -8,8 +8,12 @@ var
   cells : Sequence(Cell), aCell : Cell, nbCells : Integer,
   nbDronesOut : Integer,
   warehouse : Warehouse,
-  nbReceptacles : Integer;
+  nbReceptacles : Integer,
+  time : Time;
 begin
+  -- Generating time 
+  time := Create(Time);
+  Insert(Times, [w], [time]);
   -- Generating base grid
   nbCells := [w.SIDE * w.SIDE];
   cells := CreateN(Cell, [nbCells - w.RNB - 1]);
@@ -35,6 +39,18 @@ begin
   for r:Receptacle in [receptacles]
   begin
     [r].nbProducts := Any([Sequence{0..w.RCAP}]);
+  end;
+  
+  for c:Cell in [cells]
+  begin
+	Insert(Cells, [time], [c]);
+  end;
+  
+  for d:Drone in [drones]
+  begin
+    [d].nbProducts := [w.DCAP];
+	[d].remainingBattery := [w.MAXB];
+	Insert(Drones, [time], [d]);
   end;
 
   -- Adding neighbors
@@ -70,9 +86,8 @@ begin
   for i:Integer in [Sequence{1..nbDronesOut}]
   begin
     aDrone := Try([drones]);
-   [aDrone].nbProducts := [w.DCAP];
-   [aDrone].remainingBattery := [w.MAXB];
-    aCell := Any([cells]);
-    Insert(Position, [aDrone], [aCell]);
-  end;
+    aReceptacle := Any([receptacles]);
+	--Insert(Position, [aDrone], [warehouse]);
+    Insert(Order, [aDrone], [aReceptacle]);
+  end; 
 end;
