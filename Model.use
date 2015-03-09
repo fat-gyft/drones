@@ -93,7 +93,7 @@ context w:World inv Max_RCAP:
 
 --Rule 6
 --context w:World inv Max_DCAP:
---  Drone.allInstances->forAll(d | d.nbProducts >= w.DCAP and w.DCAP>0)
+--  Drone.allInstances->forAll(d | d.nbProducts <= w.DCAP and w.DCAP>0)
 
 --Rule 11: one Drone per Cell (in UML)
 
