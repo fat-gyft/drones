@@ -7,37 +7,20 @@ var
   receptacles : Sequence(Receptacle), aReceptacle : Receptacle,
   cells : Sequence(Cell), aCell : Cell, nbCells : Integer,
   nbDronesOut : Integer,
+  warehouse : Warehouse,
   nbReceptacles : Integer;
 begin
-  -- Generating Grid
+  -- Generating base grid
   nbCells := [w.SIDE * w.SIDE];
-  cells := CreateN(Cell, [nbCells]);
+  cells := CreateN(Cell, [nbCells - w.RNB - 1]);
+  receptacles := CreateN(Receptacle, [w.RNB]);
+  warehouse := Create(Warehouse);
 
---  [1 2 3
---   4 5 6
---   7 8 9]
---
---  1: 2 4
---  2: 3 5
---  3: 6
---  4: 5 7
---  5: 6 8
---  6: 9
---  7: 8
---  8: 9
---  9: /
+  cells := [cells->append(warehouse)];
 
-  for i:Integer in [Sequence{1..(nbCells - 1)}]
+  for i:Integer in [Sequence{1..w.RNB}]
   begin
-    -- i % w.SIDE <> 0
-    if [i - w.SIDE * (i div w.SIDE) <> 0] then
-    begin
-      Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
-    end;
-    if [i + w.SIDE <= nbCells] then
-    begin
-      Insert(Neighbors, [cells->at(i)], [cells->at(i + w.SIDE)]);
-    end;
+    cells := [cells->append(receptacles->at(i))];
   end;
 
   -- Generating drones
@@ -49,10 +32,38 @@ begin
     nbDronesOut := Any([Sequence{1..w.SIDE}]);
   end;
 
-  receptacles := CreateN(Receptacle, [w.RNB]);
   for r:Receptacle in [receptacles]
   begin
-    [r].nbProducts := Any([Sequence{1..w.RCAP}]);
+    [r].nbProducts := Any([Sequence{0..w.RCAP}]);
+  end;
+
+  -- Adding neighbors
+  --  [1 2 3
+  --   4 5 6
+  --   7 8 9]
+  --
+  --  1: 2 4
+  --  2: 3 5
+  --  3: 6
+  --  4: 5 7
+  --  5: 6 8
+  --  6: 9
+  --  7: 8
+  --  8: 9
+  --  9: /
+  for i:Integer in [Sequence{1..(nbCells - 1)}]
+  begin
+    -- i % w.SIDE <> 0
+    if [i - w.SIDE * (i div w.SIDE) <> 0] then
+    begin
+      Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
+      Insert(Neighbors, [cells->at(i + 1)], [cells->at(i)]);
+    end;
+    if [i + w.SIDE <= nbCells] then
+    begin
+      Insert(Neighbors, [cells->at(i)], [cells->at(i + w.SIDE)]);
+      Insert(Neighbors, [cells->at(i + w.SIDE)], [cells->at(i)]);
+    end;
   end;
 
   -- Adding a random number of them on the grid

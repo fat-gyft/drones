@@ -15,11 +15,11 @@ open Model.use
 !set w.RCAP := 9
 !set w.DCAP := 3
 !set w.DNB  := 3
-!set w.RNB  := 5
+!set w.RNB  := 2
 !set w.MAXB := 3
 !set w.SIDE := 3
 !set w.PTIC := 5
 
-gen start Generator.assl genWorld(w)
+gen start -b -d Generator.assl genWorld(w)
 gen result
 gen result accept

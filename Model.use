@@ -14,7 +14,6 @@ class World
 end
 
 class Cell
--- Add an operation to calculate all neighbors (both-ways)
 end
 
 class Warehouse < Cell
@@ -59,8 +58,28 @@ association Charges between
 end
 
 association Neighbors between
-  Cell [0..4] role origin
-  Cell [0..4] role neighbors
+  Cell [2..4] role origin
+  Cell [2..4] role neighbors
+end
+
+association Next between
+  Time [0..1] role previous
+  Time [0..1] role next
+end
+
+association Drones between
+  Time  [1] role time
+  Drone [*] role allDrones
+end
+
+association Cells between
+  Time [1] role time
+  Cell [*] role allCells
+end
+
+association Times between
+  World [1] role world
+  Time  [1] role head
 end
 
 --drone X
