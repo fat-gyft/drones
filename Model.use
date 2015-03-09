@@ -92,10 +92,14 @@ context w:World inv Max_RCAP:
 --Rule 3: one Receptacle per Order (in UML)
 
 --Rule 6
---context w:World inv Max_DCAP:
---  Drone.allInstances->forAll(d | d.nbProducts >= w.DCAP and w.DCAP>0)
+context w:World inv Max_DCAP:
+  Drone.allInstances->forAll(d | d.nbProducts <= w.DCAP and w.DCAP>0)
 
 --Rule 11: one Drone per Cell (in UML)
+
+--Rule 15
+context w:World inv MAXB_drones:
+  Drone.allInstances->forAll(d| [d].remainingBattery<=w.MAXB)
 
 --TicTac pdf page 27/28
 --context Time::ticTac(w : World)
