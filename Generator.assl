@@ -55,11 +55,16 @@ begin
     --Create(Receptacle);
   end;
 
+  for r:Receptacle in [receptacles]
+  begin
+	[r].nbProducts := [c.RCAP];
+  end;
+  
   -- Adding a random number of them on the grid
   for i:Integer in [Sequence{1..nbDronesOut}]
   begin
     aDrone := Try([drones]);
-	--[aDrone->init];
+	[aDrone].nbProducts := [c.DCAP];
     aCell := Any([cells]);
     Insert(Position, [aDrone], [aCell]);
   end;

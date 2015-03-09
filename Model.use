@@ -31,10 +31,6 @@ class Drone
     nbProducts : Integer
 	receptacle : Receptacle
 	position : Cell
-  operations
-    init()
-	post prod_init:
-	   self.nbProducts = 3
 end
 
 class Time
