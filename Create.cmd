@@ -11,15 +11,15 @@ open Model.use
 -- SIZE : Integer (Side of the square grid)
 -- PTIC : Integer (Number of ticks before a product is consumed)
 
-!create c:Const
-!set c.RCAP := 9
-!set c.DCAP := 3
-!set c.DNB  := 2
-!set c.RNB  := 5
-!set c.MAXB := 3
-!set c.SIDE := 3
-!set c.PTIC := 5
+!create w:World
+!set w.RCAP := 9
+!set w.DCAP := 3
+!set w.DNB  := 3
+!set w.RNB  := 5
+!set w.MAXB := 3
+!set w.SIDE := 3
+!set w.PTIC := 5
 
-gen start Generator.assl genWorld(c)
+gen start Generator.assl genWorld(w)
 gen result
 gen result accept

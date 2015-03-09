@@ -2,7 +2,7 @@
 
 model DroneModel
 
-class Const
+class World
   attributes
     RCAP : Integer -- Product capacity of a receptacle
     DCAP : Integer -- Product capacity of a drone
@@ -37,12 +37,6 @@ class Drone
 	   self.nbProducts = 3
 end
 
-class World
-  attributes
-    drones : Sequence(Drone)
-	cells: Sequence(Cell)
-end
-
 class Time
   attributes
     timeReference : Integer
@@ -50,9 +44,17 @@ class Time
     ticTac(world : World)
 end
 
+associationclass Order
+  between
+    Drone      [0..1] role deliverDrone
+    Receptacle [0..1] role destination
+  attributes
+    nbToDeliver : Integer
+end
+
 association Position between
-  Drone[0..1] role drone
-  Cell [0..1] role cell
+  Drone [0..1] role drone
+  Cell  [0..1] role cell
 end
 
 --associationclass Order
@@ -63,50 +65,58 @@ end
 --    nbToDeliver : Integer
 --end
 
+association Charges between
+  Drone      [0..1] role charging
+  Receptacle [0..1] role charger
+end
+
 association Neighbors between
   Cell [0..4] role origin
   Cell [0..4] role neighbors
 end
 
 --drone X
---orthogonal grid
+--orthogonal grid X
 --energy X
---time
+--time X
 --warehouse X
 --receptacle X
---command X
+--order X
 --product (nb, class) X
-
 
 constraints -- The invariants
 
-context Const inv Single_Const:
-  Const.allInstances->size = 1
+context World inv Single_World:
+  World.allInstances->size = 1
 
 --Rule 1
-context c:Const inv DNB_drones:
-  Drone.allInstances->size = c.DNB
+context w:World inv DNB_drones:
+  Drone.allInstances->size = w.DNB
   
-context c:Const inv RNB_receptacles:
-  Receptacle.allInstances->size = c.RNB
+--context w:World inv RNB_receptacles:
+--  Receptacle.allInstances->size = w.RNB
 
 --Rule 2
+
 --context c:Const inv Max_RCAP:
 --  Receptacle.allInstances->forAll(r | r.nbProducts <= c.RCAP and c.RCAP>0)
-  
+
+context w:World inv Max_RCAP:
+  Receptacle.allInstances->forAll(r | r.nbProducts >= w.RCAP and w.RCAP>0)
+
+--Rule 3: one Receptacle per Order (in UML)
+
 --Rule 6
---context c:Const inv Max_DCAP:
---  Drone.allInstances->forAll(d | d.nbProducts <= c.DCAP and c.DCAP>0)
- 
---Rule 11
---context c:Const inv oneDronePerCell:
---  c.DNB-
+--context w:World inv Max_DCAP:
+--  Drone.allInstances->forAll(d | d.nbProducts >= w.DCAP and w.DCAP>0)
+
+--Rule 11: one Drone per Cell (in UML)
 
 --TicTac pdf page 27/28
 --context Time::ticTac(w : World)
 --  pre initPre : w.isDefined()
 
-	
+
 --context ce:Cell inv Cell_Neighbors:
 --  ce->
 

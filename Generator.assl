@@ -1,6 +1,6 @@
 -- Copyright (c) 2015 FAT-GYFT, MIT License
 
-procedure genWorld (c : Const)
+procedure genWorld (w : World)
 
 var
   drones : Sequence(Drone), aDrone : Drone,
@@ -8,10 +8,9 @@ var
   cells : Sequence(Cell), aCell : Cell, nbCells : Integer,
   nbDronesOut : Integer,
   nbReceptacles : Integer;
-
 begin
   -- Generating Grid
-  nbCells := [c.SIDE * c.SIDE];
+  nbCells := [w.SIDE * w.SIDE];
   cells := CreateN(Cell, [nbCells]);
 
 --  [1 2 3
@@ -30,24 +29,31 @@ begin
 
   for i:Integer in [Sequence{1..(nbCells - 1)}]
   begin
-    -- i % c.SIDE <> 0 and i + c.SIDE < nbCells
-    if [i - c.SIDE * (i div c.SIDE) <> 0] then
+    -- i % w.SIDE <> 0 and i + w.SIDE < nbCells
+    if [i - w.SIDE * (i div w.SIDE) <> 0] then
     begin
       Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
     end;
-    if [i + c.SIDE <= nbCells] then
+    if [i + w.SIDE <= nbCells] then
     begin
-      Insert(Neighbors, [cells->at(i)], [cells->at(i + c.SIDE)]);
+      Insert(Neighbors, [cells->at(i)], [cells->at(i + w.SIDE)]);
     end;
   end;
 
   -- Generating drones
-  drones := CreateN(Drone, [c.DNB]);
-  nbDronesOut := Any([Sequence{1..c.DNB}]);
-  
-   -- Generating receptacles
-  receptacles := CreateN(Receptacle, [c.RNB]);
-  nbReceptacles := Any([Sequence{1..c.RNB}]);
+  drones := CreateN(Drone, [w.DNB]);
+  if [w.DNB < w.SIDE] then
+  begin
+    nbDronesOut := Any([Sequence{1..w.DNB}]);
+  end else begin
+    nbDronesOut := Any([Sequence{1..w.SIDE}]);
+  end;
+
+  -- Generating receptacles
+  for i:Integer in [Sequence{1..w.RNB}]
+  begin
+    --Create(Receptacle);
+  end;
 
   -- Adding a random number of them on the grid
   for i:Integer in [Sequence{1..nbDronesOut}]
