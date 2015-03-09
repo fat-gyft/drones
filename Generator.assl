@@ -29,7 +29,7 @@ begin
 
   for i:Integer in [Sequence{1..(nbCells - 1)}]
   begin
-    -- i % w.SIDE <> 0 and i + w.SIDE < nbCells
+    -- i % w.SIDE <> 0
     if [i - w.SIDE * (i div w.SIDE) <> 0] then
     begin
       Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
@@ -49,22 +49,17 @@ begin
     nbDronesOut := Any([Sequence{1..w.SIDE}]);
   end;
 
-  -- Generating receptacles
-  for i:Integer in [Sequence{1..w.RNB}]
-  begin
-    --Create(Receptacle);
-  end;
-
+  receptacles := CreateN(Receptacle, [w.RNB]);
   for r:Receptacle in [receptacles]
   begin
-	[r].nbProducts := [c.RCAP];
+    [r].nbProducts := Any([Sequence{1..w.RCAP}]);
   end;
-  
+
   -- Adding a random number of them on the grid
   for i:Integer in [Sequence{1..nbDronesOut}]
   begin
     aDrone := Try([drones]);
-	[aDrone].nbProducts := [c.DCAP];
+  [aDrone].nbProducts := [w.DCAP];
     aCell := Any([cells]);
     Insert(Position, [aDrone], [aCell]);
   end;

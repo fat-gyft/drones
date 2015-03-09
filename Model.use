@@ -53,14 +53,6 @@ association Position between
   Cell  [0..1] role cell
 end
 
---associationclass Order
--- between
---    Drone [0..1] role deliverDrone
---    Receptacle [0..1] role destination
---  attributes
---    nbToDeliver : Integer
---end
-
 association Charges between
   Drone      [0..1] role charging
   Receptacle [0..1] role charger
@@ -88,17 +80,14 @@ context World inv Single_World:
 --Rule 1
 context w:World inv DNB_drones:
   Drone.allInstances->size = w.DNB
-  
+
 --context w:World inv RNB_receptacles:
 --  Receptacle.allInstances->size = w.RNB
 
 --Rule 2
 
---context c:Const inv Max_RCAP:
---  Receptacle.allInstances->forAll(r | r.nbProducts <= c.RCAP and c.RCAP>0)
-
 context w:World inv Max_RCAP:
-  Receptacle.allInstances->forAll(r | r.nbProducts >= w.RCAP and w.RCAP>0)
+  Receptacle.allInstances->forAll(r | r.nbProducts <= w.RCAP)
 
 --Rule 3: one Receptacle per Order (in UML)
 
