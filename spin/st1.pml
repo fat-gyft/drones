@@ -1,5 +1,6 @@
 #define stops (stopped == 3)
 #define oneelect (y0 + y1 + y2 == 1)
+#define wrong (y0 + y1 + y2 > 1)
 byte stopped = 0;
 
 bit g0 = 1;

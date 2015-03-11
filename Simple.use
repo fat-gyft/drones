@@ -1,0 +1,75 @@
+-- Copyright (c) 2015 FAT-GYFT, MIT License
+
+model DroneModel
+
+-------------
+-- CLASSES --
+-------------
+
+class Universe
+  attributes
+    TICN : Integer -- Number of tics to generate
+    RCAP : Integer -- Product capacity of a receptacle
+    DCAP : Integer -- Product capacity of a drone
+    DNB  : Integer -- Drone number
+    RNB  : Integer -- Receptacle number
+    MAXB : Integer -- Max battery for a drone
+    SIDE : Integer -- Side of the square grid
+    PTIC : Integer -- Number of ticks before a product is consumed
+end
+
+class World
+end
+
+class Cell
+end
+
+class Warehouse < Cell
+end
+
+class Receptacle < Cell
+  attributes
+    nbProducts : Integer
+end
+
+------------------
+-- ASSOCIATIONS --
+------------------
+
+association Worlds between
+  Universe [1] role universe;
+  World    [*] role worlds;
+end
+
+association NextWorld between
+  World [0..1] role prev;
+  World [0..1] role next;
+end
+
+association WorldCells between
+  World [1] role world;
+  Cell  [*] role cells;
+end
+
+----------------
+-- INVARIANTS --
+----------------
+
+constraints
+
+context Universe
+  inv Single_Universe:
+  Universe.allInstances->size = 1
+
+context u:Universe
+  inv TICN_Worlds:
+  World.allInstances->size = u.TICN
+
+context w1,w2:World
+  inv Different_Worlds:
+  w1.next->includes(w2) implies w1 <> w2
+
+context u:Universe
+  inv Square_Grid:
+  u.worlds->forAll(w | w.cells->size = u.SIDE * u.SIDE)
+

@@ -3,6 +3,7 @@
 reset
 open Model.use
 
+-- TICN : Integer (Number of tics to generate)
 -- RCAP : Integer (Product capacity of a receptacle)
 -- DCAP : Integer (Product capacity of a drone)
 -- DNB  : Integer (Drone number)
@@ -11,15 +12,16 @@ open Model.use
 -- SIZE : Integer (Side of the square grid)
 -- PTIC : Integer (Number of ticks before a product is consumed)
 
-!create w:World
-!set w.RCAP := 9
-!set w.DCAP := 3
-!set w.DNB  := 3
-!set w.RNB  := 2
-!set w.MAXB := 3
-!set w.SIDE := 3
-!set w.PTIC := 5
+!create u:Universe
+!set u.TICN := 2
+!set u.RCAP := 9
+!set u.DCAP := 3
+!set u.DNB  := 3
+!set u.RNB  := 2
+!set u.MAXB := 3
+!set u.SIDE := 3
+!set u.PTIC := 5
 
-gen start -b -d Generator.assl genWorld(w)
+gen start -b -d Generator.assl genWorlds(u)
 gen result
 gen result accept

@@ -2,8 +2,16 @@
 
 model DroneModel
 
-class World
+-------------
+-- CLASSES --
+-------------
+
+-- Time Management:
+-------------------
+
+class Universe
   attributes
+    TICN : Integer -- Number of tics to generate
     RCAP : Integer -- Product capacity of a receptacle
     DCAP : Integer -- Product capacity of a drone
     DNB  : Integer -- Drone number
@@ -13,43 +21,97 @@ class World
     PTIC : Integer -- Number of ticks before a product is consumed
 end
 
+class World
+end
+
+-- Cells:
+---------
+
 class Cell
 end
 
-class Warehouse < Cell
+class Warehouse
 end
 
-class Receptacle < Cell
+class Receptacle
   attributes
     nbProducts : Integer
 end
+
+-- Drone:
+---------
 
 class Drone
   attributes
     remainingBattery : Integer
     nbProducts : Integer
-	receptacle : Receptacle
-	position : Cell
+    receptacle : Receptacle
+    position : Cell
 end
 
-class Time
-  attributes
-    timeReference : Integer
-  operations
-    ticTac(world : World)
-end
+-------------------------
+-- ASSOCIATION CLASSES --
+-------------------------
 
 associationclass Order
   between
-    Drone      [0..1] role deliverDrone
-    Receptacle [0..1] role destination
+    Drone      [0..1] role deliverDrone  -- Line 4
+    Receptacle [0..1] role destination   -- Line 3
   attributes
     nbToDeliver : Integer
 end
 
+------------------
+-- ASSOCIATIONS --
+------------------
+
+-- Time management:
+-------------------
+
+association Worlds between
+  Universe [1] role universe
+  World    [*] role worlds
+end
+
+association NextWorld between
+  World [0..1] role prev
+  World [0..1] role next
+end
+
+association WorldCells between
+  World [1]
+  Cell  [*] role cells
+end
+
+association WorldDrones between
+  World [1]
+  Drone [*] role drones
+end
+
+-- Grid management:
+-------------------
+
+association Neighbors between
+  Cell [2..4] role origin
+  Cell [2..4] role neighbors
+end
+
+association HasWarehouse between
+  Cell      [1]    role position
+  Warehouse [0..1] role warehouse
+end
+
+association HasReceptacle between
+  Cell       [1]    role position
+  Receptacle [0..1] role receptacle
+end
+
+-- Drones management:
+---------------------
+
 association Position between
   Drone [0..1] role drone
-  Cell  [0..1] role cell
+  Cell  [0..1] role position
 end
 
 association Charges between
@@ -57,106 +119,97 @@ association Charges between
   Receptacle [0..1] role charger
 end
 
-association Neighbors between
-  Cell [2..4] role origin
-  Cell [2..4] role neighbors
-end
+----------------
+-- INVARIANTS --
+----------------
 
-association Next between
-  Time [0..1] role previous
-  Time [0..1] role next
-end
+constraints
 
-association Drones between
-  Time  [1] role time
-  Drone [*] role allDrones
-end
+-- Time management:
+-------------------
 
-association Cells between
-  Time [1] role time
-  Cell [*] role allCells
-end
+context Universe
+  inv Single_Universe:
+  Universe.allInstances->size = 1
 
-association Times between
-  World [1] role world
-  Time  [1] role head
-end
+context u:Universe
+  inv TICN_Worlds:
+  World.allInstances->size = u.TICN
 
---drone X
---orthogonal grid X
---energy X
---time X
---warehouse X
---receptacle X
---order X
---product (nb, class) X
+context w1,w2:World
+  inv Different_Worlds:
+  w1.next->includes(w2) implies w1 <> w2
 
-constraints -- The invariants
+context w1,w2:World
+  inv No_Shared_Cell:
+  w1 <> w2 implies w1.cells->intersection(w2.cells)->isEmpty()
 
-context World inv Single_World:
-  World.allInstances->size = 1
+context w1,w2:World
+  inv No_Shared_Drone:
+  w1 <> w2 implies w1.drones->intersection(w2.drones)->isEmpty()
 
---Rule 1
-context w:World inv DNB_drones:
-  Drone.allInstances->size = w.DNB
+-- Grid management:
+-------------------
 
---context w:World inv RNB_receptacles:
---  Receptacle.allInstances->size = w.RNB
+context u:Universe
+  inv Square_Grid:
+  u.worlds->forAll(w |
+    w.cells->size = u.SIDE * u.SIDE)
 
---Rule 2
+context u:Universe -- Line 1
+  inv RNB_receptacles:
+  u.worlds->forAll(w |
+    w.cells->select(c |
+      not c.receptacle.isUndefined())->size = u.RNB)
 
-context w:World inv Max_RCAP:
-  Receptacle.allInstances->forAll(r | r.nbProducts <= w.RCAP)
+context u:Universe -- Line 2
+  inv Max_RCAP:
+  u.worlds->forAll(w |
+    w.cells->select(c |
+      not c.receptacle.isUndefined())->forAll(rc |
+        rc.receptacle.nbProducts <= u.RCAP))
 
---Rule 3: one Receptacle per Order (in UML)
+-- Drones management:
+---------------------
 
---Rule 6
-context w:World inv Max_DCAP:
-  Drone.allInstances->forAll(d | d.nbProducts <= w.DCAP and w.DCAP>0)
+context u:Universe -- Line 1
+  inv DNB_Drones:
+  u.worlds->forAll(w |
+    w.drones->size = u.DNB)
 
---Rule 11: one Drone per Cell (in UML)
+context u:Universe -- Line 6
+  inv Max_DCAP:
+  u.worlds->forAll(w |
+    w.drones->forAll(d |
+      d.nbProducts <= u.DCAP))
 
---Rule 15
-context w:World inv MAXB_drones:
-  Drone.allInstances->forAll(d| [d].remainingBattery<=w.MAXB)
+-- Delivery management:
+-----------------------
 
---TicTac pdf page 27/28
---context Time::ticTac(w : World)
---  pre initPre : w.isDefined()
-
-
---context ce:Cell inv Cell_Neighbors:
---  ce->
-
-
-
-
-
+-- A drone must deliver all products at once
+----- context w1,w2:World -- Line 7
+-----   inv Deliver_All_Products:
+-----   w1.next->includes(w2) implies w1.drones->forAll(d1 |
+-----     w2.drones->forAll(d2 |
+-----       d1.position = d2.position))
 
 
 
 
+-----Rule 11: one Drone per Cell (in UML)
+
+-----Rule 15
+-----context u:Universe, w:World inv MAXB_drones:
+-----  Drone.allInstances->forAll(d| [d].remainingBattery<=u.MAXB)
+
+-----TicTac pdf page 27/28
+-----context Universe::ticTac(w : World)
+-----  pre initPre : u.isDefined()
+
+
+-----context ce:Cell inv Cell_Neighbors:
+-----  ce->
 
 
 
 
-
-
--- a drone leaves the warehouse directly to one of its neighbor
--- two drones can cross (if their destination is different)
--- an order only has one destination receptacle
--- a drone only leaves the warehouse if:
---     nbToDeliver + nbDelivering + qtyInReceptacle <= RCAP
---     and tests this hypothesis for every tick
--- a drone must be able to move (max 3 drone neighbors)
--- a drone has max DCAP products
--- a receptacle has max RCAP products
--- only one drone per cell
--- only one drone per receptacle
-
-
-
-
--- entering the warehouse is done just like any Cell
--- but after one tick, the drone has no position anymore (in the warehouse)
--- every PTIC ticks, all receptacles loose product

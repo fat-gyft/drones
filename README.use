@@ -1,0 +1,26 @@
+
+
+
+
+
+
+
+
+-- a drone leaves the warehouse directly to one of its neighbor
+-- two drones can cross (if their destination is different)
+-- an order only has one destination receptacle
+-- a drone only leaves the warehouse if:
+--     nbToDeliver + nbDelivering + qtyInReceptacle <= RCAP
+--     and tests this hypothesis for every tick
+-- a drone must be able to move (max 3 drone neighbors)
+-- a drone has max DCAP products
+-- a receptacle has max RCAP products
+-- only one drone per cell
+-- only one drone per receptacle
+
+
+
+
+-- entering the warehouse is done just like any Cell
+-- but after one tick, the drone has no position anymore (in the warehouse)
+-- every PTIC ticks, all receptacles loose product
