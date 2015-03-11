@@ -117,7 +117,7 @@ begin
     receptacles := CreateN(Receptacle, [u.RNB]);
     for r:Receptacle in [receptacles]
     begin
-      [r].nbProducts := Any([Sequence{0..w.RCAP}]);
+      [r].nbProducts := Any([Sequence{0..u.RCAP}]);
     end;
 
     warehouse := Create(Warehouse);
@@ -187,16 +187,8 @@ end;
 
 
 procedure TicTac (w: World)
-var
-  drones : Sequence(Drone),
-  cells : Sequence(Cell),
-  time : Time;
 begin
-  time := [w.head];
-  drones := [time.allDrones->asSequence()];
-  cells :=[time.allCells->asSequence()];
-  
-  for d:Drone in [drones]
+  for d:Drone in [w.drones->asSequence()]
   begin
     [d].remainingBattery := [d.remainingBattery - 1];
   end;
