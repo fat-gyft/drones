@@ -22,6 +22,6 @@ open Model.use
 !set u.SIDE := 3
 !set u.PTIC := 5
 
-gen start -b -d Generator.assl genWorlds(u)
+gen start Generator.assl genWorlds(u)
 gen result
 gen result accept

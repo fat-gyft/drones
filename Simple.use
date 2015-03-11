@@ -6,6 +6,9 @@ model DroneModel
 -- CLASSES --
 -------------
 
+-- Time Management:
+-------------------
+
 class Universe
   attributes
     TICN : Integer -- Number of tics to generate
@@ -21,41 +24,120 @@ end
 class World
 end
 
+-- Cells:
+---------
+
 class Cell
 end
 
-class Warehouse < Cell
+class Warehouse
 end
 
-class Receptacle < Cell
+class Receptacle
   attributes
     nbProducts : Integer
 end
+
+-- Drones:
+----------
+
+class Drone
+  attributes
+    remainingBattery : Integer
+    nbProducts : Integer
+    receptacle : Receptacle
+    position : Cell
+end
+
+-------------------------
+-- ASSOCIATION CLASSES --
+-------------------------
+
+
+
+
+
+
+
+
+
 
 ------------------
 -- ASSOCIATIONS --
 ------------------
 
+-- Time management:
+-------------------
+
 association Worlds between
-  Universe [1] role universe;
-  World    [*] role worlds;
+  Universe [1] role universe
+  World    [*] role worlds
+end
+
+association Cells between
+  Universe [1]
+  Cell     [*] role cells
 end
 
 association NextWorld between
-  World [0..1] role prev;
-  World [0..1] role next;
+  World [0..1] role prev
+  World [0..1] role next
 end
 
-association WorldCells between
-  World [1] role world;
-  Cell  [*] role cells;
+association WorldDrones between
+  World [1]
+  Drone [*] role drones
 end
+
+
+
+
+
+
+
+
+
+
+
+-- Grid management:
+-------------------
+
+association Neighbors between
+  Cell [2..4] role origin
+  Cell [2..4] role neighbors
+end
+
+
+
+
+
+
+
+
+
+
+
+-- Drones management:
+---------------------
+
+
+
+
+
+
+
+
+
+
 
 ----------------
 -- INVARIANTS --
 ----------------
 
 constraints
+
+-- Time management:
+-------------------
 
 context Universe
   inv Single_Universe:
@@ -69,7 +151,78 @@ context w1,w2:World
   inv Different_Worlds:
   w1.next->includes(w2) implies w1 <> w2
 
-context u:Universe
-  inv Square_Grid:
-  u.worlds->forAll(w | w.cells->size = u.SIDE * u.SIDE)
+context w1,w2:World
+  inv No_Shared_Drone:
+  w1 <> w2 implies w1.drones->intersection(w2.drones)->isEmpty()
+
+-- Grid management:
+-------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Drones management:
+---------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Delivery management:
+-----------------------
+
+-- A drone must deliver all products at once
+----- context w1,w2:World -- Line 7
+-----   inv Deliver_All_Products:
+-----   w1.next->includes(w2) implies w1.drones->forAll(d1 |
+-----     w2.drones->forAll(d2 |
+-----       d1.position = d2.position))
+
+
+
+
+-----Rule 11: one Drone per Cell (in UML)
+
+-----Rule 15
+-----context u:Universe, w:World inv MAXB_drones:
+-----  Drone.allInstances->forAll(d| [d].remainingBattery<=u.MAXB)
+
+-----TicTac pdf page 27/28
+-----context Universe::ticTac(w : World)
+-----  pre initPre : u.isDefined()
+
+
+-----context ce:Cell inv Cell_Neighbors:
+-----  ce->
+
+
+
 

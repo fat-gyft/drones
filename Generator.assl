@@ -1,82 +1,5 @@
 -- Copyright (c) 2015 FAT-GYFT, MIT License
 
--- procedure genWorld (u : Universe)
--- 
--- var
---   drones : Sequence(Drone), aDrone : Drone,
---   receptacles : Sequence(Receptacle), aReceptacle : Receptacle,
---   cells : Sequence(Cell), aCell : Cell, nbCells : Integer,
---   nbDronesOut : Integer,
---   warehouse : Warehouse,
---   nbReceptacles : Integer;
--- begin
---   -- Generating base grid
---   nbCells := [u.SIDE * u.SIDE];
---   cells := CreateN(Cell, [nbCells - u.RNB - 1]);
---   receptacles := CreateN(Receptacle, [u.RNB]);
---   warehouse := Create(Warehouse);
--- 
---   cells := [cells->append(warehouse)];
--- 
---   for i:Integer in [Sequence{1..u.RNB}]
---   begin
---     cells := [cells->append(receptacles->at(i))];
---   end;
--- 
---   -- Generating drones
---   drones := CreateN(Drone, [u.DNB]);
---   if [u.DNB < u.SIDE] then
---   begin
---     nbDronesOut := Any([Sequence{1..u.DNB}]);
---   end else begin
---     nbDronesOut := Any([Sequence{1..u.SIDE}]);
---   end;
--- 
---   for r:Receptacle in [receptacles]
---   begin
---     [r].nbProducts := Any([Sequence{0..u.RCAP}]);
---   end;
--- 
---   -- Adding neighbors
---   --  [1 2 3
---   --   4 5 6
---   --   7 8 9]
---   --
---   --  1: 2 4
---   --  2: 3 5
---   --  3: 6
---   --  4: 5 7
---   --  5: 6 8
---   --  6: 9
---   --  7: 8
---   --  8: 9
---   --  9: /
---   for i:Integer in [Sequence{1..(nbCells - 1)}]
---   begin
---     -- i % u.SIDE <> 0
---     if [i - u.SIDE * (i div u.SIDE) <> 0] then
---     begin
---       Insert(Neighbors, [cells->at(i)], [cells->at(i + 1)]);
---       Insert(Neighbors, [cells->at(i + 1)], [cells->at(i)]);
---     end;
---     if [i + u.SIDE <= nbCells] then
---     begin
---       Insert(Neighbors, [cells->at(i)], [cells->at(i + u.SIDE)]);
---       Insert(Neighbors, [cells->at(i + u.SIDE)], [cells->at(i)]);
---     end;
---   end;
--- 
---   -- Adding a random number of them on the grid
---   for i:Integer in [Sequence{1..nbDronesOut}]
---   begin
---     aDrone := Try([drones]);
---    [aDrone].nbProducts := [u.DCAP];
---    [aDrone].remainingBattery := [u.MAXB];
---     aCell := Any([cells]);
---     Insert(Position, [aDrone], [aCell]);
---   end;
--- end;
-
 procedure genWorlds (u : Universe)
 var
   worlds : Sequence(World),
@@ -84,52 +7,29 @@ var
   aWorld2 : World,
 
   nbCells : Integer,
+  nbDronesOut : Integer,
 
   cells : Sequence(Cell),
   aCell : Cell,
+  warehouseCell : Cell,
+
   receptacles : Sequence(Receptacle),
   warehouse : Warehouse,
+
+  aDrone : Drone,
   drones : Sequence(Drone);
 
 begin
-  -----------------------
-  -- Generating worlds --
-  -----------------------
+  ---------------------
+  -- Generating grid --
+  ---------------------
 
-  worlds := CreateN(World, [u.TICN]);
-  aWorld := Try([worlds]);
-  aWorld2 := Try([worlds]);
-  Insert(NextWorld, [aWorld], [aWorld2]);
+  nbCells := [u.SIDE * u.SIDE];
+  cells := CreateN(Cell, [nbCells]);
 
-  ----------------------------------------
-  -- Inserting into Worlds and Universe --
-  ----------------------------------------
-
-  for wi:Integer in [Sequence{1..u.TICN}]
+  for i:Integer in [Sequence{1..(nbCells)}]
   begin
-    ---------------------
-    -- Generating grid --
-    ---------------------
-
-    nbCells := [u.SIDE * u.SIDE];
-    cells := CreateN(Cell, [nbCells]);
-
-    receptacles := CreateN(Receptacle, [u.RNB]);
-    for r:Receptacle in [receptacles]
-    begin
-      [r].nbProducts := Any([Sequence{0..u.RCAP}]);
-    end;
-
-    warehouse := Create(Warehouse);
-
-    aCell := Try([cells]);
-    Insert(HasWarehouse, [aCell], [warehouse]);
-
-    for i:Integer in [Sequence{1..u.RNB}]
-    begin
-      aCell := Try([cells]);
-      Insert(HasReceptacle, [aCell], [receptacles->at(i)]);
-    end;
+    Insert(Cells, [u], [cells->at(i)]);
 
     -- Adding neighbors:
     --------------------
@@ -147,7 +47,7 @@ begin
     --  8: 9
     --  9: /
 
-    for i:Integer in [Sequence{1..(nbCells - 1)}]
+    if [i < nbCells] then
     begin
       -- i % u.SIDE <> 0
       if [i - u.SIDE * (i div u.SIDE) <> 0] then
@@ -161,11 +61,61 @@ begin
         Insert(Neighbors, [cells->at(i + u.SIDE)], [cells->at(i)]);
       end;
     end;
+  end;
+
+  -----------------------
+  -- Generating worlds --
+  -----------------------
+
+  worlds := CreateN(World, [u.TICN]);
+
+  for i:Integer in [Sequence{1..u.TICN - 1}]
+  begin
+    Insert(NextWorld, [worlds->at(i)], [worlds->at(i + 1)]);
+  end;
+
+  ----------------------------------------
+  -- Inserting into Worlds and Universe --
+  ----------------------------------------
+
+  warehouseCell := Any([cells]);
+
+  for wi:Integer in [Sequence{1..u.TICN}]
+  begin
+    receptacles := CreateN(Receptacle, [u.RNB]);
+    for r:Receptacle in [receptacles]
+    begin
+      [r].nbProducts := Any([Sequence{0..u.RCAP}]);
+    end;
+
+    warehouse := Create(Warehouse);
+    Insert(HasWarehouse, [warehouseCell], [warehouse]);
+
+    for i:Integer in [Sequence{1..u.RNB}]
+    begin
+      aCell := Try([cells]);
+      Insert(HasReceptacle, [aCell], [receptacles->at(i)]);
+    end;
 
     -----------------------
     -- Generating drones --
     -----------------------
     drones := CreateN(Drone, [u.DNB]);
+    for i:Integer in [Sequence{1..u.DNB}]
+    begin
+      [drones->at(i)].id := [i];
+      [drones->at(i)].nbProducts := [0];
+      [drones->at(i)].remainingBattery := [u.MAXB];
+    end;
+
+    -- Adding a random number of them on the grid
+    nbDronesOut := Any([Sequence{1..u.DNB}]);
+    for i:Integer in [Sequence{1..nbDronesOut}]
+    begin
+      aDrone := Try([drones]);
+      aCell := Any([cells]);
+      Insert(Position, [aDrone], [aCell]);
+    end;
 
     ---------------
     -- Insertion --
@@ -173,9 +123,11 @@ begin
 
     Insert(Worlds, [u], [worlds->at(wi)]);
 
-    for i:Integer in [Sequence{1..nbCells}]
+    Insert(WorldWarehouse, [worlds->at(wi)], [warehouse]);
+
+    for i:Integer in [Sequence{1..u.RNB}]
     begin
-      Insert(WorldCells, [worlds->at(wi)], [cells->at(i)]);
+      Insert(WorldReceptacles, [worlds->at(wi)], [receptacles->at(i)]);
     end;
 
     for i:Integer in [Sequence{1..u.DNB}]
@@ -188,10 +140,10 @@ end;
 
 procedure TicTac (w: World)
 begin
-  for d:Drone in [w.drones->asSequence()]
-  begin
-    [d].remainingBattery := [d.remainingBattery - 1];
-  end;
+---------------   for d:Drone in [w.drones->asSequence()]
+---------------   begin
+---------------     [d].remainingBattery := [d.remainingBattery - 1];
+---------------   end;
 end;
 
 

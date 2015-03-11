@@ -38,11 +38,12 @@ class Receptacle
     nbProducts : Integer
 end
 
--- Drone:
----------
+-- Drones:
+----------
 
 class Drone
   attributes
+    id : Integer
     remainingBattery : Integer
     nbProducts : Integer
     receptacle : Receptacle
@@ -53,14 +54,14 @@ end
 -- ASSOCIATION CLASSES --
 -------------------------
 
-associationclass Order
-  between
-    Drone      [1..*] role deliverDrone  -- Line 5
-    Receptacle [0..1] role destination   -- Line 3
+--------------- associationclass Order
+---------------   between
+---------------     Drone      [0..*] role deliverDrone  -- Line 5
+---------------     Receptacle [0..1] role destination   -- Line 3
 
-  attributes
-    nbToDeliver : Integer
-end
+---------------   attributes
+---------------     nbToDeliver : Integer
+--------------- end
 
 ------------------
 -- ASSOCIATIONS --
@@ -71,7 +72,12 @@ end
 
 association Worlds between
   Universe [1] role universe
-  World    [*] role worlds
+  World    [*] role worlds ordered
+end
+
+association Cells between
+  Universe [1]
+  Cell     [*] role cells
 end
 
 association NextWorld between
@@ -79,14 +85,19 @@ association NextWorld between
   World [0..1] role next
 end
 
-association WorldCells between
-  World [1]
-  Cell  [*] role cells
-end
-
 association WorldDrones between
   World [1]
   Drone [*] role drones
+end
+
+association WorldReceptacles between
+  World      [1]
+  Receptacle [*] role receptacles
+end
+
+association WorldWarehouse between
+  World     [1]
+  Warehouse [1] role warehouse
 end
 
 -- Grid management:
@@ -98,13 +109,13 @@ association Neighbors between
 end
 
 association HasWarehouse between
-  Cell      [1]    role position
-  Warehouse [0..1] role warehouse
+  Cell      [1] role position
+  Warehouse [*] role warehouse
 end
 
 association HasReceptacle between
-  Cell       [1]    role position
-  Receptacle [0..1] role receptacle
+  Cell       [1] role position
+  Receptacle [*] role receptacle
 end
 
 -- Drones management:
@@ -139,36 +150,49 @@ context u:Universe
 
 context w1,w2:World
   inv Different_Worlds:
-  w1.next->includes(w2) implies w1 <> w2
-
-context w1,w2:World
-  inv No_Shared_Cell:
-  w1 <> w2 implies w1.cells->intersection(w2.cells)->isEmpty()
+  w1.next = w2 implies w1 <> w2
 
 context w1,w2:World
   inv No_Shared_Drone:
   w1 <> w2 implies w1.drones->intersection(w2.drones)->isEmpty()
+
+context w1,w2:World
+  inv No_Shared_Receptacle:
+  w1 <> w2 implies w1.receptacles->intersection(w2.receptacles)->isEmpty()
 
 -- Grid management:
 -------------------
 
 context u:Universe
   inv Square_Grid:
-  u.worlds->forAll(w |
-    w.cells->size = u.SIDE * u.SIDE)
+  u.cells->size = u.SIDE * u.SIDE
 
 context u:Universe -- Line 1
   inv RNB_receptacles:
   u.worlds->forAll(w |
-    w.cells->select(c |
-      not c.receptacle.isUndefined())->size = u.RNB)
+    w.receptacles->size = u.RNB)
 
 context u:Universe -- Line 2
   inv Max_RCAP:
   u.worlds->forAll(w |
-    w.cells->select(c |
-      not c.receptacle.isUndefined())->forAll(rc |
-        rc.receptacle.nbProducts <= u.RCAP))
+    w.receptacles->forAll(rc |
+      rc.nbProducts <= u.RCAP))
+
+context w1,w2:World
+  inv Fixed_Receptacles:
+  w1 <> w2 implies w1.receptacles->forAll(r1 |
+    w2.receptacles->exists(r2 | r1.position = r2.position))
+
+context w1,w2:World
+  inv Fixed_Warehouse:
+  w1 <> w2 implies w1.warehouse.position = w2.warehouse.position
+
+context w:World
+  inv Max_One_Amenity: -- Line 12
+  w.receptacles->forAll(r1 |
+    w.receptacles->forAll(r2 |
+      r1.position = r2.position implies r1 = r2))
+  and w.receptacles->forAll(r | r.position <> w.warehouse.position)
 
 -- Drones management:
 ---------------------
@@ -189,6 +213,13 @@ context u:Universe -- Line 15
   u.worlds->forAll(w |
     w.drones->forAll(d|
       d.remainingBattery <= u.MAXB))
+
+context w:World -- Line 19
+  inv One_Drone_Cell:
+  w.drones->forAll(d1, d2 |
+    not d1.position.isUndefined() and
+    not d2.position.isUndefined() and
+    d1.position = d2.position implies d1 = d2)
 
 -- Delivery management:
 -----------------------
