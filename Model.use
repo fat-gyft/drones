@@ -55,8 +55,9 @@ end
 
 associationclass Order
   between
-    Drone      [0..1] role deliverDrone  -- Line 4
+    Drone      [1..*] role deliverDrone  -- Line 5
     Receptacle [0..1] role destination   -- Line 3
+
   attributes
     nbToDeliver : Integer
 end
@@ -182,6 +183,12 @@ context u:Universe -- Line 6
   u.worlds->forAll(w |
     w.drones->forAll(d |
       d.nbProducts <= u.DCAP))
+
+context u:Universe -- Line 15
+  inv MAXB_drones:
+  u.worlds->forAll(w |
+    w.drones->forAll(d|
+      d.remainingBattery <= u.MAXB))
 
 -- Delivery management:
 -----------------------
