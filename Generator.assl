@@ -3,15 +3,16 @@
 procedure genWorlds (u : Universe)
 var
   worlds : Sequence(World),
-  aWorld : World,
-  aWorld2 : World,
+  aWorld : World,   --at t
+  aWorld2 : World,  --at t-1
 
   nbCells : Integer,
-  nbDronesOut : Integer,
+  nbDronesMoving : Integer,
 
   cells : Sequence(Cell),
   aCell : Cell,
   warehouseCell : Cell,
+  baseCell : Cell,
 
   receptacles : Sequence(Receptacle),
   warehouse : Warehouse,
@@ -79,7 +80,7 @@ begin
   ----------------------------------------
 
   warehouseCell := Any([cells]);
-
+  
   for wi:Integer in [Sequence{1..u.TICN}]
   begin
     receptacles := CreateN(Receptacle, [u.RNB]);
@@ -87,7 +88,7 @@ begin
     begin
       [r].nbProducts := Any([Sequence{0..u.RCAP}]);
     end;
-
+    
     warehouse := Create(Warehouse);
     Insert(HasWarehouse, [warehouseCell], [warehouse]);
 
@@ -108,14 +109,40 @@ begin
       [drones->at(i)].remainingBattery := [u.MAXB];
     end;
 
-    -- Adding a random number of them on the grid
-    nbDronesOut := Any([Sequence{1..u.DNB}]);
-    for i:Integer in [Sequence{1..nbDronesOut}]
+    if [wi > 1] then
     begin
-      aDrone := Try([drones]);
-      aCell := Any([cells]);
-      Insert(Position, [aDrone], [aCell]);
-    end;
+      -- Adding a random number of them on the grid
+      nbDronesMoving := Any([Sequence{1..u.DNB}]);
+      for i:Integer in [Sequence{1..nbDronesMoving}]
+      begin
+        aWorld2 := [worlds->at(wi-1)];
+      
+        --
+        --aCell := Any([aDrone.position.neighbors->asSequence()]);
+     
+        aDrone := [aWorld2.drones->asSequence()->at(i)];
+
+        if [aDrone.position->isUndefined()] then
+        begin
+          baseCell := [warehouseCell];
+        end else begin
+          baseCell := [aDrone.position];
+        end;
+
+        aCell := [baseCell];
+        if [baseCell.neighbors->asSequence()->isDefined()] then 
+        begin
+          for c:Cell in [baseCell.neighbors->asSequence()]
+          begin
+            if [c.drone.isUndefined()] then
+            begin
+              aCell := [c];
+            end;
+          end;
+          Insert(Position, [aDrone], [aCell]);
+        end;
+      end;
+    end;  -- end if wi > 1
 
     ---------------
     -- Insertion --
@@ -134,8 +161,8 @@ begin
     begin
       Insert(WorldDrones, [worlds->at(wi)], [drones->at(i)]);
     end;
-  end;
-end;
+  end;  -- end for all worlds
+end;  -- end procedure
 
 
 procedure TicTac (w: World)
