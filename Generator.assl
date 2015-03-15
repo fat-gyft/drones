@@ -9,6 +9,7 @@ var
   nbCells : Integer,
   nbDronesMoving : Integer,
 
+  sCell : Sequence(Cell),
   cells : Sequence(Cell),
   aCell : Cell,
   warehouseCell : Cell,
@@ -18,6 +19,7 @@ var
   warehouse : Warehouse,
 
   aDrone : Drone,
+  bDrone : Drone,
   drones : Sequence(Drone);
 
 begin
@@ -115,39 +117,44 @@ begin
       nbDronesMoving := Any([Sequence{1..u.DNB}]);
       for i:Integer in [Sequence{1..nbDronesMoving}]
       begin
-        aWorld2 := [worlds->at(wi-1)];
       
-        --
-        --aCell := Any([aDrone.position.neighbors->asSequence()]);
+        aWorld2 := [worlds->at(wi-1)];
      
-        aDrone := [aWorld2.drones->asSequence()->at(i)];
-
-        if [aDrone.position->isUndefined()] then
+        bDrone := [aWorld2.drones->asSequence()->at(i)];
+        
+        aDrone := [drones->at(i)];
+        [aDrone].id := [aDrone.id];
+        [aDrone].nbProducts := [aDrone.nbProducts];
+        [aDrone].remainingBattery := [aDrone.remainingBattery];
+        
+        if [aDrone.position.neighbors->isDefined()] then
         begin
-          baseCell := [warehouseCell];
-        end else begin
           baseCell := [aDrone.position];
+        end else begin
+           baseCell := [warehouseCell];
         end;
 
         aCell := [baseCell];
-        if [baseCell.neighbors->asSequence()->isDefined()] then 
-        begin
           for c:Cell in [baseCell.neighbors->asSequence()]
           begin
             if [c.drone.isUndefined()] then
             begin
               aCell := [c];
+              [aDrone].nbProducts :=Any([Sequence{1..u.DCAP}]);
             end;
           end;
+          if [aDrone.position <> aCell] then
+          begin
+            [aDrone].remainingBattery :=[aDrone.remainingBattery-1];
+          end;
           Insert(Position, [aDrone], [aCell]);
-        end;
       end;
     end;  -- end if wi > 1
 
     ---------------
     -- Insertion --
     ---------------
-
+    
     Insert(Worlds, [u], [worlds->at(wi)]);
 
     Insert(WorldWarehouse, [worlds->at(wi)], [warehouse]);

@@ -227,15 +227,15 @@ context w1,w2:World -- Line 17
     w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
 	  d1.id=d2.id implies
  	    d1.position.neighbors->includes(d2.position) or 
-		  d1.position = d2.position))
+		  d1.position = d2.position or w1.warehouse.position.neighbors->includes(d2.position))) -- need to improve this rule with an if
 		  
---context w1,w2:World -- Line 
---  inv Drones_Energy:
---    w1.next = w2 implies 
---    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
---	  d1.id=d2.id and
- --	    d1.position.neighbors->includes(d2.position) implies
---		  d2.remainingBattery=d1.remainingBattery-1))
+context w1,w2:World -- Line 
+  inv Drones_Energy:
+    w1.next = w2 implies 
+    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
+	  d1.id=d2.id and
+ 	   d1.position<>d2.position implies
+		  d2.remainingBattery=d1.remainingBattery-1))
 
 
 
