@@ -16,6 +16,7 @@ var
   baseCell : Cell,
 
   receptacles : Sequence(Receptacle),
+  aReceptacle : Receptacle,
   warehouse : Warehouse,
 
   aDrone : Drone,
@@ -126,28 +127,42 @@ begin
         [aDrone].id := [aDrone.id];
         [aDrone].nbProducts := [aDrone.nbProducts];
         [aDrone].remainingBattery := [aDrone.remainingBattery];
+        aReceptacle := Any([receptacles]);
         
-        if [aDrone.position.neighbors->isDefined()] then
+        if[aDrone.position.isDefined() and aDrone.deliveringReceptacle.isDefined()
+          and aDrone.position=aDrone.deliveringReceptacle.position] then
         begin
-          baseCell := [aDrone.position];
+        
+          Insert(Charges, [aDrone], [aDrone.deliveringReceptacle]);
+          
         end else begin
-           baseCell := [warehouseCell];
-        end;
 
-        aCell := [baseCell];
-          for c:Cell in [baseCell.neighbors->asSequence()]
+          if [aDrone.position.neighbors->isDefined()] then
           begin
-            if [c.drone.isUndefined()] then
+            baseCell := [aDrone.position];
+          end else begin
+             baseCell := [warehouseCell];
+          end;
+
+          aCell := [baseCell];
+            for c:Cell in [baseCell.neighbors->asSequence()]
             begin
-              aCell := [c];
-              [aDrone].nbProducts :=Any([Sequence{1..u.DCAP}]);
+              if [c.drone.isUndefined()] then
+              begin
+                aCell := [c];
+                [aDrone].nbProducts :=Any([Sequence{1..u.DCAP}]);
+                if [aDrone.deliveringReceptacle.isUndefined()] then
+                begin
+                  Insert(ReceptaclePosition, [aDrone], [aReceptacle]);
+                end;
+              end;
             end;
-          end;
-          if [aDrone.position <> aCell] then
-          begin
-            [aDrone].remainingBattery :=[aDrone.remainingBattery-1];
-          end;
-          Insert(Position, [aDrone], [aCell]);
+            if [aDrone.position <> aCell] then
+            begin
+              [aDrone].remainingBattery :=[aDrone.remainingBattery-1];
+            end;
+            Insert(Position, [aDrone], [aCell]);
+          end;  
       end;
     end;  -- end if wi > 1
 
@@ -170,14 +185,5 @@ begin
     end;
   end;  -- end for all worlds
 end;  -- end procedure
-
-
-procedure TicTac (w: World)
-begin
----------------   for d:Drone in [w.drones->asSequence()]
----------------   begin
----------------     [d].remainingBattery := [d.remainingBattery - 1];
----------------   end;
-end;
 
 

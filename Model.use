@@ -54,14 +54,14 @@ end
 -- ASSOCIATION CLASSES --
 -------------------------
 
---------------- associationclass Order
----------------   between
----------------     Drone      [0..*] role deliverDrone  -- Line 5
----------------     Receptacle [0..1] role destination   -- Line 3
+associationclass Delivering
+   between
+     Drone      [0..*] role deliverDrone  -- Line 5
+     Receptacle [0..1] role destination   -- Line 3
 
----------------   attributes
----------------     nbToDeliver : Integer
---------------- end
+   attributes
+     nbToDeliver : Integer
+ end
 
 ------------------
 -- ASSOCIATIONS --
@@ -124,6 +124,11 @@ end
 association Position between
   Drone [0..1] role drone
   Cell  [0..1] role position
+end
+
+association ReceptaclePosition between
+  Drone [*] role drone
+  Receptacle  [0..1] role deliveringReceptacle
 end
 
 association Charges between
