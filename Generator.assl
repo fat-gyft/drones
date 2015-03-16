@@ -131,6 +131,8 @@ begin
       [drones->at(i)].id := [i];
       [drones->at(i)].nbProducts := Any([Sequence{1..u.DCAP}]);
       [drones->at(i)].remainingBattery := [u.MAXB];
+      aReceptacle := Try([receptacles]);
+      Insert(ReceptaclePosition, [aDrone], [aReceptacle]);
     end;
 
     if [wi > 1] then
@@ -147,7 +149,6 @@ begin
         aDrone := [drones->at(i)];
         [aDrone].nbProducts := [bDrone.nbProducts];
         [aDrone].remainingBattery := [bDrone.remainingBattery];
-        aReceptacle := Try([receptacles]);
         [aDrone].id := [bDrone.id];
         
         if [bDrone.charger.isDefined()] then 
@@ -173,23 +174,19 @@ begin
           end;
 
           aCell := [baseCell];
+          
           for c:Cell in [baseCell.neighbors->asSequence()]
           begin
             if [c.drone.isUndefined() and c<>warehouseCell] then
             begin
               aCell := [c];
-              if [aDrone.deliveringReceptacle.isUndefined()] then
-              begin
-                Insert(ReceptaclePosition, [aDrone], [aReceptacle]);
-              end;
-             
             end;
           end;
           
           if [not aCell.receptacle->isEmpty()] then
           begin
             bReceptacle := Any([aCell.receptacle->asSequence()]);
-            Insert(Charges, [aDrone], [bReceptacle]);-------------------Rentre pas
+            Insert(Charges, [aDrone], [bReceptacle]);
           end;
           
           if [aDrone.position <> aCell] then
@@ -200,6 +197,12 @@ begin
           begin
             Delete(Position, [bDrone], [bDrone.position]);
           end;
+          
+          if [aDrone.position.isDefined() and aCell.receptacle->isDefined() and aCell.receptacle->includes(aDrone.deliveringReceptacle)] then
+          begin
+            [aDrone].nbProducts := [0];
+          end;
+          
           Insert(Position, [aDrone], [aCell]);
           
         end;  
