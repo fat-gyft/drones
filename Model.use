@@ -54,14 +54,14 @@ end
 -- ASSOCIATION CLASSES --
 -------------------------
 
-associationclass Delivering
-   between
-     Drone      [0..*] role deliverDrone  -- Line 5
-     Receptacle [0..1] role destination   -- Line 3
-
-   attributes
-     nbToDeliver : Integer
- end
+--associationclass Delivering
+--   between
+--     Drone      [0..*] role deliverDrone  -- Line 5
+--     Receptacle [0..1] role destination   -- Line 3
+--
+--   attributes
+--     nbToDeliver : Integer
+-- end
 
 ------------------
 -- ASSOCIATIONS --
@@ -187,6 +187,14 @@ context w1,w2:World
   inv Fixed_Receptacles:
   w1 <> w2 implies w1.receptacles->forAll(r1 |
     w2.receptacles->exists(r2 | r1.position = r2.position))
+    
+context u:Universe -- regler si on supprime des receptacles
+  inv Receptacles_Distance:
+  u.worlds->forAll(w |
+    w.receptacles->forAll(rc |
+      rc.position.neighbors->exists(c1 | c1.receptacle->isDefined())
+      or rc.position.neighbors->exists(c2 | c2.neighbors->exists(c3 | c3.receptacle->isDefined()))))
+      
 
 context w1,w2:World
   inv Fixed_Warehouse:
@@ -226,23 +234,26 @@ context w:World -- Line 19
     not d2.position.isUndefined() and
     d1.position = d2.position implies d1 = d2)
 
-context w1,w2:World -- Line 17
-  inv Drones_Move:
-  w1.next = w2 implies 
-    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
-	  d1.id=d2.id implies
- 	    d1.position.neighbors->includes(d2.position) or 
-		  d1.position = d2.position or w1.warehouse.position.neighbors->includes(d2.position))) -- need to improve this rule with an if
-		  
-context w1,w2:World -- Line 
-  inv Drones_Energy:
-    w1.next = w2 implies 
-    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
-	  d1.id=d2.id and
- 	   d1.position<>d2.position implies
-		  d2.remainingBattery=d1.remainingBattery-1))
+--context w1,w2:World -- Line 17   regler parce qu'on supprime des drones des positions car les celules sont uniques
+--  inv Drones_Move:
+--  w1.next = w2 implies 
+--    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
+--	  d1.id=d2.id implies
+-- 	    d1.position.neighbors->includes(d2.position) or 
+--		  d1.position = d2.position or w1.warehouse.position.neighbors->includes(d2.position))) -- need to improve this rule with an if
+--		  
+--context w1,w2:World -- Line 
+--  inv Drones_Energy:
+--    w1.next = w2 implies 
+--    w1.drones->forAll(d1 | w2.drones->forAll(d2 | 
+--	  d1.id=d2.id and
+-- 	   d1.position<>d2.position implies
+--		  d2.remainingBattery=d1.remainingBattery-1))
 
-
+--context u:Universe -- 
+--  inv Positive_Drone_Energy:
+--  u.worlds->forAll(w |
+--    w.drones->forAll(d| d.remainingBattery>0))
 
     
 
@@ -261,20 +272,6 @@ context w1,w2:World -- Line
 
 -----Rule 11: one Drone per Cell (in UML)
 
------Rule 15
------context u:Universe, w:World inv MAXB_drones:
------  Drone.allInstances->forAll(d| [d].remainingBattery<=u.MAXB)
-
------TicTac pdf page 27/28
------context Universe::ticTac(w : World)
------  pre initPre : u.isDefined()
-
-
------context ce:Cell inv Cell_Neighbors:
------  ce->
-
---context::drone::move()
- --     post : self@pre.remainingBattery-1
 
 
 

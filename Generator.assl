@@ -17,6 +17,7 @@ var
 
   receptacles : Sequence(Receptacle),
   aReceptacle : Receptacle,
+  bReceptacle : Receptacle,
   warehouse : Warehouse,
 
   aDrone : Drone,
@@ -82,23 +83,43 @@ begin
   -- Inserting into Worlds and Universe --
   ----------------------------------------
 
-  warehouseCell := Any([cells]);
+  warehouseCell := [cells->at(5)];
   
   for wi:Integer in [Sequence{1..u.TICN}]
   begin
-    receptacles := CreateN(Receptacle, [u.RNB]);
-    for r:Receptacle in [receptacles]
+    if [wi = 1] then
     begin
-      [r].nbProducts := Any([Sequence{0..u.RCAP}]);
-    end;
-    
-    warehouse := Create(Warehouse);
-    Insert(HasWarehouse, [warehouseCell], [warehouse]);
-
-    for i:Integer in [Sequence{1..u.RNB}]
-    begin
-      aCell := Try([cells]);
-      Insert(HasReceptacle, [aCell], [receptacles->at(i)]);
+      receptacles := CreateN(Receptacle, [u.RNB]);
+      for r:Receptacle in [receptacles]
+      begin
+        [r].nbProducts := Any([Sequence{0..u.RCAP}]);
+      end;
+      
+      warehouse := Create(Warehouse);
+      Insert(HasWarehouse, [warehouseCell], [warehouse]);
+      Insert(HasReceptacle, [cells->at(1)], [receptacles->at(1)]);
+      Insert(HasReceptacle, [cells->at(3)], [receptacles->at(2)]);
+      Insert(HasReceptacle, [cells->at(7)], [receptacles->at(3)]);
+      Insert(HasReceptacle, [cells->at(9)], [receptacles->at(4)]);
+      
+      
+    end else begin
+      receptacles := CreateN(Receptacle, [u.RNB]);
+      aWorld2 := [worlds->at(wi-1)];
+      
+      for i:Integer in [Sequence{1..u.RNB}]
+      begin
+         aReceptacle := [receptacles->at(i)];
+         bReceptacle := [aWorld2.receptacles->asSequence()->at(i)];
+        [aReceptacle].nbProducts := [bReceptacle.nbProducts];
+        aCell := [bReceptacle.position];
+        Insert(HasReceptacle, [aCell], [receptacles->at(i)]);
+      end;
+      
+      warehouse := Create(Warehouse);
+      -- Il faut changer et mettre warehouse dans l'univers
+      Insert(HasWarehouse, [aWorld2.warehouse.position], [warehouse]);
+      
     end;
 
     -----------------------
@@ -108,7 +129,7 @@ begin
     for i:Integer in [Sequence{1..u.DNB}]
     begin
       [drones->at(i)].id := [i];
-      [drones->at(i)].nbProducts := [0];
+      [drones->at(i)].nbProducts := Any([Sequence{1..u.DCAP}]);
       [drones->at(i)].remainingBattery := [u.MAXB];
     end;
 
@@ -126,14 +147,24 @@ begin
         aDrone := [drones->at(i)];
         [aDrone].nbProducts := [bDrone.nbProducts];
         [aDrone].remainingBattery := [bDrone.remainingBattery];
-        aReceptacle := Any([receptacles]);
+        aReceptacle := Try([receptacles]);
         [aDrone].id := [bDrone.id];
         
-        if[aDrone.charger.isDefined()] then 
+        if [bDrone.charger.isDefined()] then 
         begin
-          Delete(Charges, [aDrone], [aDrone.deliveringReceptacle]);
-        end else begin
+          Insert(Charges, [aDrone], [bDrone.charger]);
+          Delete(Charges, [bDrone], [bDrone.charger]);
+        end;
 
+        if[aDrone.charger.isDefined() and aDrone.remainingBattery<3] then 
+        begin
+          [aDrone].remainingBattery :=[aDrone.remainingBattery+1];
+          if[aDrone.remainingBattery=3] then 
+          begin
+            Delete(Charges, [aDrone], [aDrone.charger]);
+          end;
+        end else begin
+          
           if [aDrone.position.neighbors->isDefined()] then
           begin
             baseCell := [aDrone.position];
@@ -144,30 +175,31 @@ begin
           aCell := [baseCell];
           for c:Cell in [baseCell.neighbors->asSequence()]
           begin
-            if [c.drone.isUndefined()] then
+            if [c.drone.isUndefined() and c<>warehouseCell] then
             begin
               aCell := [c];
-              [aDrone].nbProducts :=Any([Sequence{1..u.DCAP}]);
               if [aDrone.deliveringReceptacle.isUndefined()] then
               begin
                 Insert(ReceptaclePosition, [aDrone], [aReceptacle]);
               end;
+             
             end;
+          end;
+          
+          if [not aCell.receptacle->isEmpty()] then
+          begin
+            bReceptacle := Any([aCell.receptacle->asSequence()]);
+            Insert(Charges, [aDrone], [bReceptacle]);-------------------Rentre pas
           end;
           
           if [aDrone.position <> aCell] then
           begin
-          
             [aDrone].remainingBattery :=[aDrone.remainingBattery-1];
-            
-            if[aDrone.deliveringReceptacle.isDefined()
-              and aCell=aDrone.deliveringReceptacle.position] then
-            begin
-              Insert(Charges, [aDrone], [aDrone.deliveringReceptacle]);
-            end;
-            
           end;
-          
+          if [bDrone.position.isDefined()] then
+          begin
+            Delete(Position, [bDrone], [bDrone.position]);
+          end;
           Insert(Position, [aDrone], [aCell]);
           
         end;  

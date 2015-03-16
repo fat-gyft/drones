@@ -13,11 +13,11 @@ open Model.use
 -- PTIC : Integer (Number of ticks before a product is consumed)
 
 !create u:Universe
-!set u.TICN := 3
+!set u.TICN := 5
 !set u.RCAP := 9
 !set u.DCAP := 3
 !set u.DNB  := 3
-!set u.RNB  := 2
+!set u.RNB  := 4
 !set u.MAXB := 3
 !set u.SIDE := 3
 !set u.PTIC := 5
