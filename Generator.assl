@@ -132,7 +132,7 @@ begin
       [drones->at(i)].nbProducts := Any([Sequence{1..u.DCAP}]);
       [drones->at(i)].remainingBattery := [u.MAXB];
       aReceptacle := Try([receptacles]);
-      Insert(ReceptaclePosition, [aDrone], [aReceptacle]);
+      Insert(ReceptaclePosition, [drones->at(i)], [aReceptacle]);
     end;
 
     if [wi > 1] then
